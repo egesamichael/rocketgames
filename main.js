@@ -15,10 +15,10 @@ camera.position.z = 30
 
 renderer.render(scene, camera)
 
-const geometry = new THREE.TorusGeometry(10, 3, 16, 100);
-const material = new THREE.MeshStandardMaterial({ color: 0x00ff00});
-const torus = new THREE.Mesh(geometry, material);
-scene.add(torus);
+// const geometry = new THREE.TorusGeometry(10, 3, 16, 100);
+// const material = new THREE.MeshStandardMaterial({ color: 0x00ff00});
+// const torus = new THREE.Mesh(geometry, material);
+// scene.add(torus);
 
 const ambientLight = new THREE.AmbientLight(0xffffff);
 scene.add(ambientLight);
@@ -51,9 +51,12 @@ scene.add(egesa)
 
 function animate() {
   requestAnimationFrame(animate);
-  torus.rotation.x += 0.01;
-  torus.rotation.y += 0.005;
-  torus.rotation.z += 0.01;
+  // torus.rotation.x += 0.01;
+  // torus.rotation.y += 0.005;
+  // torus.rotation.z += 0.01;
+  egesa.rotation.x += 0.01;
+  egesa.rotation.y += 0.005;
+  egesa.rotation.z += 0.01;
   controls.update();
   renderer.render(scene, camera);
 }
