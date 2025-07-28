@@ -37,7 +37,7 @@ function addStars() {
 // Create 200 stars
 Array(200).fill().forEach(addStars);
 
-const spaceTexture = new THREE.TextureLoader().load('space.jpg');
+const spaceTexture = new THREE.TextureLoader().load('spacenew.jpg');
 scene.background = spaceTexture;
 
 const myTexture = new THREE.TextureLoader().load('egesa.jpeg');
