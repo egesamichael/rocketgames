@@ -53,15 +53,15 @@ const bingoBall = new THREE.Mesh(ballGeometry, ballMaterial);
 scene.add(bingoBall);
 
 // Add glowing edge to the ball
-const edges = new THREE.EdgesGeometry(ballGeometry);
-const edgeMaterial = new THREE.LineBasicMaterial({ 
-  color: 0x66aaff, 
-  linewidth: 2,
-  transparent: true,
-  opacity: 0.7
-});
-const ballEdges = new THREE.LineSegments(edges, edgeMaterial);
-bingoBall.add(ballEdges);
+// const edges = new THREE.EdgesGeometry(ballGeometry);
+// const edgeMaterial = new THREE.LineBasicMaterial({ 
+//   color: 0x66aaff, 
+//   linewidth: 2,
+//   transparent: true,
+//   opacity: 0.7
+// });
+// const ballEdges = new THREE.LineSegments(edges, edgeMaterial);
+// bingoBall.add(ballEdges);
 
 // Animation variables
 let ballRotationSpeed = 0.005;
