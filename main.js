@@ -1,64 +1,126 @@
-import './style.css'
-import * as THREE from 'three'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import * as THREE from 'three';
 
-// Create a scene, camera, and renderer
 const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050510); // Space-like dark background
+
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer(
-  { canvas: document.getElementById('bg') }
-)
 
-renderer.setPixelRatio(window.devicePixelRatio)
-renderer.setSize(window.innerWidth, window.innerHeight)
-camera.position.z = 30
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setAnimationLoop(animate);
+document.body.appendChild(renderer.domElement);
 
-renderer.render(scene, camera)
-
-// const geometry = new THREE.TorusGeometry(10, 3, 16, 100);
-// const material = new THREE.MeshStandardMaterial({ color: 0x00ff00});
-// const torus = new THREE.Mesh(geometry, material);
-// scene.add(torus);
-
-const ambientLight = new THREE.AmbientLight(0xffffff);
-scene.add(ambientLight);
-
-const controls = new OrbitControls(camera, renderer.domElement);
-
-function addStars() {
-  const geometry = new THREE.SphereGeometry(0.25, 24, 24); // Smaller size for stars
+// Create a star field
+const starCount = 300;
+const stars = [];
+for (let i = 0; i < starCount; i++) {
+  const geometry = new THREE.SphereGeometry(0.03, 8, 8);
   const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
   const star = new THREE.Mesh(geometry, material);
-  const [x, y, z] = Array(3).fill().map(() => THREE.MathUtils.randFloatSpread(100));
-  star.position.set(x, y, z);
+  star.position.x = (Math.random() - 0.5) * 40;
+  star.position.y = (Math.random() - 0.5) * 40;
+  star.position.z = (Math.random() - 0.5) * 40;
   scene.add(star);
+  stars.push(star);
 }
 
-// Create 200 stars
-Array(200).fill().forEach(addStars);
+// Create the bingo ball sphere
+const ballRadius = 5;
+const ballGeometry = new THREE.SphereGeometry(ballRadius, 64, 64);
 
-const spaceTexture = new THREE.TextureLoader().load('spacenew.jpg');
-scene.background = spaceTexture;
+// Load the bingo text texture
+const textureLoader = new THREE.TextureLoader();
+const ballTexture = textureLoader.load('bingo.jpg', (texture) => {
+  // Adjust texture settings for better appearance
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(1, 1);
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+});
 
-const myTexture = new THREE.TextureLoader().load('egesa.jpeg');
+const ballMaterial = new THREE.MeshBasicMaterial({
+  map: ballTexture,
+  color: 0xffffff,
+  shininess: 100,
+  specular: 0x111111,
+  emissive: 0x000000,
+  side: THREE.DoubleSide,
+  transparent: true,
+  opacity: 0.9
+});
 
-const egesa = new THREE.Mesh(
-  new THREE.BoxGeometry(10, 10, 10),
-  new THREE.MeshBasicMaterial({ map: myTexture })
-)
+const bingoBall = new THREE.Mesh(ballGeometry, ballMaterial);
+scene.add(bingoBall);
 
-scene.add(egesa)
+// Add glowing edge to the ball
+const edges = new THREE.EdgesGeometry(ballGeometry);
+const edgeMaterial = new THREE.LineBasicMaterial({ 
+  color: 0x66aaff, 
+  linewidth: 2,
+  transparent: true,
+  opacity: 0.7
+});
+const ballEdges = new THREE.LineSegments(edges, edgeMaterial);
+bingoBall.add(ballEdges);
+
+// Animation variables
+let ballRotationSpeed = 0.005;
+let pulseDirection = 1;
+let pulseSpeed = 0.005;
+
+camera.position.z = 15;
+
+// Add a soft ambient and point light for glow
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
+const pointLight = new THREE.PointLight(0x66aaff, 1.2, 40);
+pointLight.position.set(0, 0, 10);
+scene.add(pointLight);
+
+// Add another point light for better illumination
+const pointLight2 = new THREE.PointLight(0xff6666, 0.8, 30);
+pointLight2.position.set(10, 10, 5);
+scene.add(pointLight2);
+
+// Animate stars to float gently
+function animateStars() {
+  for (let i = 0; i < stars.length; i++) {
+    const star = stars[i];
+    star.position.x += Math.sin(Date.now() * 0.0002 + i) * 0.0005;
+    star.position.y += Math.cos(Date.now() * 0.0002 + i) * 0.0005;
+  }
+}
 
 function animate() {
-  requestAnimationFrame(animate);
-  // torus.rotation.x += 0.01;
-  // torus.rotation.y += 0.005;
-  // torus.rotation.z += 0.01;
-  egesa.rotation.x += 0.01;
-  egesa.rotation.y += 0.005;
-  egesa.rotation.z += 0.01;
-  controls.update();
+  // Rotate the bingo ball
+  bingoBall.rotation.x += ballRotationSpeed * 0.5;
+  bingoBall.rotation.y += ballRotationSpeed;
+  
+  // Pulsing effect
+  const scale = bingoBall.scale.x;
+  if (scale > 1.1) pulseDirection = -1;
+  if (scale < 0.9) pulseDirection = 1;
+  bingoBall.scale.x += pulseSpeed * pulseDirection;
+  bingoBall.scale.y += pulseSpeed * pulseDirection;
+  bingoBall.scale.z += pulseSpeed * pulseDirection;
+  
+  // Slightly rotate the camera for a dynamic space effect
+  camera.position.x = Math.sin(Date.now() * 0.0001) * 2;
+  camera.position.y = Math.cos(Date.now() * 0.0001) * 2;
+  camera.lookAt(0, 0, 0);
+
+  animateStars();
+  if (window.controls) window.controls.update();
   renderer.render(scene, camera);
 }
 
-animate();
+// Add OrbitControls for camera movement
+(async () => {
+  const module = await import('three/examples/jsm/controls/OrbitControls.js');
+  const OrbitControls = module.OrbitControls;
+  window.controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.05;
+  controls.minDistance = 5;
+  controls.maxDistance = 40;
+})();
